@@ -1,0 +1,65 @@
+<head>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+
+<body >
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <div>
+        <a href="{% url 'vm:index' %}" class="float-right" style="padding: 5px">返回</a>
+        <a href="#" class="float-right" style="padding: 5px">添加</a>
+    </div>
+    <div class="border"><br/>
+        <h2 style="text-align: center">KVM自启动列表</h2><br/>
+    </div>
+    <div>
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li {% if message.tags == 'success' %}
+                    class="{{ message.tags }}"  style="color: #34ce57"
+                {% elif message.tags == 'warning' %}
+                    class="{{ message.tags }}"  style="color: #dc3545"
+                {% elif message.tag %}
+                    class="{{ message.tags }}"  style="color: #777620"
+                {% endif %}>{{ message }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    <div>
+        <table class="table table-hover table-striped table-bordered table-sm" id="table-info" style="font-size: small;width: 97%;" align="center">
+            <thead>
+                <tr>
+                    <th>Host</th>
+                    <th>XmlFile</th>
+                    <th>Name</th>
+                    <th>IP</th>
+                    <th width="100px">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+        {% if data %}
+            {% for i in data %}
+                <tr>
+                    <td>{{ i.host }}</td>
+                    <td>{{ i.xml_file }}</td>
+                    <td>{{ i.name }}</td>
+                    <td>{{ i.ip }}</td>
+                    <td>
+                        <a  href="{% url 'vm:autostart' %}?action=del&host={{ i.host }}&name={{ i.name }}" >取消</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+                <tr>
+                    <td colspan="6" align="center" >
+                        <div>没找到数据。</div>
+                    </td>
+                </tr>
+        {% endif %}
+            </tbody>
+        </table><br/>
+    </div>
+</body>
+

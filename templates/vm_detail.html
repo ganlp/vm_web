@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detail</title>
+</head>
+<body>
+{% if object %}
+    <div>主机 : {{ object.host }}</div>
+    <div>名称 : {{ object.domain }}</div>
+    <div>UUID : {{ object.uuid }}</div>
+    <div>描述 : {{ object.description }}</div>
+    <div>内存 : {% widthratio object.memory 1024 1 %} MB</div>
+    <div>CPU个数 : {{ object.vcpu }}</div>
+    <div>存储设备 : {{ object.storage }}</div>
+    <div>网络设备 : {{ object.network }}</div>
+{% else %}
+    <div>没找到数据。</div>
+{% endif %}
+
+</body>
+</html>

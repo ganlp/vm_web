@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="zh-hans" >
+<head>
+<title>{{ title }} | {{ site_title|default:'Kvm站点管理' }}</title>
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/base.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/login.css" %}">
+{{ form.media }}
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/responsive.css" %}">
+<meta name="robots" content="NONE,NOARCHIVE">
+</head>
+
+
+<body class="{% if is_popup %}popup {% endif %}login"
+  data-admin-utc-offset="{% now "Z" %}">
+
+<!-- Container -->
+<div id="container">
+
+    {% if not is_popup %}
+    <!-- Header -->
+    <div id="header">
+        <div id="branding">
+        <h1 id="site-name"><a href="{% url 'user:login' %}">{{ site_header|default:'Kvm管理' }}</a></h1>
+        </div>
+
+    </div>
+    <!-- END Header -->
+    {% endif %}
+
+    <!-- Content -->
+    <div id="content" class="colM">
+        {% if form.errors and not form.non_field_errors %}
+        <p class="errornote">
+        {% if form.errors.items|length == 1 %}
+            请修正以下这个错误.
+        {% else %}
+            请修正以下这些错误.
+        {% endif %}
+        </p>
+        {% endif %}
+
+        {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+        <p class="errornote">
+            {{ error }}
+        </p>
+        {% endfor %}
+        {% endif %}
+
+        <div id="content-main">
+
+        {% if user.is_authenticated %}{# 当前用户已登录没重定向而还停留在此页面，则表示无权限 #}
+        <p class="errornote">
+            您当前以 {{ username }} 登录，但是没有这个页面的访问权限。您想使用另外一个账号登录吗？
+        </p>
+        {% endif %}
+
+        <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+          <div class="form-row">
+            {{ form.username.errors }}
+            {{ form.username.label_tag }} {{ form.username }}
+          </div>
+          <div class="form-row">
+            {{ form.password.errors }}
+            {{ form.password.label_tag }} {{ form.password }}
+            <input type="hidden" name="next" value="{{ next }}">
+          </div>
+          {% url 'admin_password_reset' as password_reset_url %}
+          {% if password_reset_url %}
+          <div class="password-reset-link">
+            <a href="{{ password_reset_url }}">忘记用户名或密码？</a>
+          </div>
+          {% endif %}
+          <div class="submit-row">
+            <label>&nbsp;</label><input type="submit" value="登录">
+          </div>
+        </form>
+
+        </div>
+        <br class="clear">
+    </div>
+    <!-- END Content -->
+    <div id="footer"></div>
+</div>
+<!-- END Container -->
+
+</body>
+</html>
+

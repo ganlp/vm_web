@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+
+<body >
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/require.js" defer async></script>
+    <script data-main="/static/js/main" src="/static/js/require.js"></script>
+    <script> //csrf验证
+        $.ajaxSetup({
+    data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+        });
+    </script>
+    <div>
+        <a href="{% url 'vm:userlog' %}" class="float-right" style="padding: 5px">日志</a><!--
+        <a href="{% url 'vm:autostart' %}" class="float-right" style="padding: 5px">自启动</a>-->
+    </div>
+    <div class="border"><br/>
+        <h2 style="text-align: center">虚拟机管理</h2><br/>
+        <form id="f1"  action="{% url 'vm:index' %}" method="GET">
+            {% csrf_token %}
+            <div class="col">
+            {% for field in form %}
+                {{ field.label_tag }}{{ field }}
+                {{ field.errors }}
+            {% endfor %}
+            </div>
+            <div class="col" style="text-align:right;">
+                <button type="submit" class="btn btn-primary" >查询</button>
+            </div><br/>
+
+        </form>
+    </div>
+        <div>
+            <table class="table table-hover table-striped table-bordered table-sm" id="table-info" style="font-size: small;width: 97%;" align="center">
+                <thead>
+                    <tr>
+                        <th>主机</th>
+                        <th>名称</th>
+                        <th>IP</th>
+                        <th style="min-width: 60px;">申请人</th>
+                        <th>ISO版本</th>
+                        <th>镜像包</th>
+                        <th>用途</th>
+                        <th>备注</th>
+                        <th style="min-width: 100px;">创建时间</th>
+                        <th style="min-width: 60px;">状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+            {% if data %}
+                {% for i in data %}
+                    <tr data-id={{ i.id }}>
+                        <td>{{ i.host }}</td>
+                        <td>{{ i.name }}</td>
+                        <td>{{ i.ip }}</td>
+                        <td>{{ i.user }}</td>
+                        <td>{{ i.iso_ver }}</td>
+                        <td>{{ i.package }}</td>
+                        <td>{{ i.purposes }}</td>
+                        <td>{{ i.remark }}</td>
+                        {% if i.created_at is None %}
+                        <td>未知</td>
+                        {% else %}
+                        <td>{{ i.created_at }}</td>
+                        {% endif %}
+                        <td>{{ i.status }}</td>
+                        {% if i.status == '运行中' %}
+                        <td style="white-space: nowrap">
+                            <button name="btn-off" value={{ i.id }} type="button" class="btn btn-outline-danger btn-sm" onclick="onc(this.name,this.value)">关机</button>
+                            <button name="btn-vnc" value={{ i.id }} type="button" class="btn btn-outline-info btn-sm" onclick="vm_console(this.value)">VNC</button>
+                        </td>
+                        {% elif i.status == '关闭' %}
+                        <td>
+                            <button name="btn-on" value={{ i.id }} type="button"  class="btn btn-outline-primary btn-sm" onclick="onc(this.name,this.value)">开机</button>
+
+                        </td>
+                        {% else %}
+                        <td  style="text-align: center">
+                            <a>-</a>
+                        </td>
+                        {% endif %}
+                     </tr>
+                  {% endfor %}
+            {% else %}
+                    <tr>
+                        <td colspan="11" align="center" >
+                            <div>没找到数据。</div>
+                        </td>
+                    </tr>
+            {% endif %}
+
+                </tbody>
+            </table><br/>
+        </div>
+        <nav aria-label="Page navigation example">
+          <ul class="pagination pagination-sm justify-content-end">
+            {% if data.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ data.previous_page_number }}" aria-label="Previous">
+            {% else %}
+                <li class="page-item disabled">
+                  <a class="page-link"  tabindex="-1" aria-label="Previous">
+            {% endif %}
+                    <span aria-hidden="true">&laquo;</span>
+                    <span class="sr-only">Previous</span>
+                  </a>
+                </li>
+            {% for pg in data.paginator.page_range %}
+                {% if data.number == pg %}
+                    <li class="active page-item"><a class="page-link" href="?page={{ pg }}">{{ pg }}</a></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ pg }}">{{ pg }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if data.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ data.next_page_number }}" aria-label="Next" >
+            {% else %}
+                <li class="page-item disabled">
+                  <a class="page-link" tabindex="-1" aria-label="Next">
+            {% endif %}
+                    <span aria-hidden="true">&raquo;</span>
+                    <span class="sr-only">Next</span>
+                  </a>
+                </li>
+                <span class="page-link" style="color: #1a1a1a">({{ data.start_index }}-{{ data.end_index }}/{{ data.paginator.count }})</span>
+          </ul>
+        </nav>
+    <script>
+        function onc(name,val){
+            var arg = {};
+            arg[name] = val;
+            $.post("{% url 'vm:index' %}",arg,
+            function(data){
+                if(data === '0'){ alert('操作成功');
+                //document.getElementById('f1').submit();
+                    window.location.reload();}
+                else {alert('操作失败'+ '\n' + data)
+                    }
+            });}
+        function vm_console(id) {
+            //window.open("vnc/?id=" + id , "", "status=1,width=1034,height=848");
+            var app = require('./js/app');
+            app.default.show("vnc/?id=" + id);
+        }
+    </script>
+    <script>
+        function view(target) {
+            var id = target.data('id');
+            if(!id){
+                return;
+            }
+            //alert(td);
+             window.open("index/vm_detail-" + id)
+        }
+        jQuery('tbody tr').on('dblclick', function (e) {
+            view(jQuery(this));
+        });
+    </script>
+
+</body>
+</html>

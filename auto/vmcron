@@ -1,0 +1,3 @@
+*/3 * * * * root py3 /data/vm_web/manage.py check_status >/dev/null 2>&1
+01 */12 * * * root py3 /data/vm_web/manage.py xml_insert >/dev/null 2>&1
+01 */10 * * * root py3 /data/vm_web/manage.py xml_update >/dev/null 2>&1
